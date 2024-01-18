@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"github.com/google/uuid"
 	"time"
 
 	_ "github.com/google/uuid"
@@ -43,7 +42,7 @@ func SignInByPassword(conn *pgx.Conn, email, passwordHash string) (*User, *Token
 	user.Urls = urls
 
 	// insert token
-	token := Token{Value: uuid.New().String(), ExpiredAt: time.Now().AddDate(0, 0, 21)}
+	token := buildToken()
 	err3 := conn.QueryRow(context.Background(), "INSERT INTO shortly.tokens (userid, value, expiredat) VALUES ($1, $2, $3) RETURNING id", user.Id, token.Value, token.ExpiredAt).Scan(&token.Id)
 	if err3 != nil {
 		return nil, nil, err3

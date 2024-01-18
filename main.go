@@ -40,7 +40,7 @@ func main() {
 	//fmt.Fprintf(os.Stderr, "Successfuly signin the user: %v, %v\n", user.Id, token.Value)
 
 	// ----- signin by token
-	//user, err := models.SignInByToken(conn, "3ad074ed-b5da-4891-8f84-d50ff779c10a")
+	//user, err := models.SignInByToken(conn, "6df1f6ea-0ac5-4cea-a3a4-ef50858720bb")
 	//if err != nil {
 	//	fmt.Fprintf(os.Stderr, "Unable to signin user: %v\n", err)
 	//	os.Exit(1)
@@ -55,8 +55,27 @@ func main() {
 	//}
 	//fmt.Fprintf(os.Stderr, "Successfuly create short URL: %v\n", url.Id)
 
-	// TODO:
 	// ----- delete url
-	// ----- delete url
+	//err3 := models.DeleteURL(conn, user, url.Id)
+	//if err3 != nil {
+	//	fmt.Fprintf(os.Stderr, "Unable to detele short URL: %v\n", err3)
+	//	os.Exit(1)
+	//}
+	//fmt.Fprintf(os.Stderr, "Successfuly delete short URL: %v\n", url.Id)
+
+	// ----- get url
+	//url2, err3 := models.GetURL(conn, url.ShortLink)
+	//if err3 != nil {
+	//	fmt.Fprintf(os.Stderr, "Unable to get URL: %v\n", err3)
+	//	os.Exit(1)
+	//}
+	//fmt.Fprintf(os.Stderr, "Successfuly get URL: %v\n", url2.Id)
+
 	// ----- renew token
+	//token2, err2 := models.RenewToken(conn, token.Value, user.Id)
+	//if err2 != nil {
+	//	fmt.Fprintf(os.Stderr, "Unable to renew token: %v\n", err2)
+	//	os.Exit(1)
+	//}
+	//fmt.Fprintf(os.Stderr, "Successfuly renew token: %v, %v\n", user.Id, token2.Value)
 }
