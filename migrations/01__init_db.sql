@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS shortly.users
     passwordHash TEXT NOT NULL
 );
 
-CREATE UNIQUE INDEX idx__users__email on shortly.users (email);
+CREATE UNIQUE INDEX IF NOT EXISTS idx__users__email on shortly.users (email);
 
 -- tokens
 CREATE TABLE IF NOT EXISTS shortly.tokens
@@ -21,9 +21,10 @@ CREATE TABLE IF NOT EXISTS shortly.tokens
     expiredAt TIMESTAMPTZ NOT NULL,
 
     CONSTRAINT fk_userId FOREIGN KEY (userId) REFERENCES shortly.users (id)
-    );
+);
 
-CREATE INDEX idx__tokens__user_id on shortly.tokens (userId);
+CREATE INDEX IF NOT EXISTS idx__tokens__user_id on shortly.tokens (userId);
+CREATE UNIQUE INDEX IF NOT EXISTS idx__tokens__value on shortly.tokens (value);
 
 -- urls
 CREATE TABLE IF NOT EXISTS shortly.urls
@@ -35,8 +36,9 @@ CREATE TABLE IF NOT EXISTS shortly.urls
     views        BIGINT NOT NULL DEFAULT 0,
 
     CONSTRAINT fk_userId FOREIGN KEY (userId) REFERENCES shortly.users (id)
-    );
+);
 
-CREATE INDEX idx__urls__user_id on shortly.tokens (userId);
+CREATE INDEX IF NOT EXISTS idx__urls__user_id on shortly.urls (userid);
+CREATE UNIQUE INDEX IF NOT EXISTS idx__urls__shortLink on shortly.urls (shortLink);
 
 COMMIT;
