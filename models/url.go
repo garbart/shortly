@@ -4,7 +4,9 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"log"
+	"strconv"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -17,7 +19,25 @@ type URL struct {
 	Views        int
 }
 
-func getUserUrls(conn *pgx.Conn, userId int) ([]URL, error) {
+func (url *URL) ToJSON() ([]byte, error) {
+	return url.toJSON()
+}
+
+func (url *URL) toJSON() ([]byte, error) {
+	resp := make(map[string]string)
+	resp["id"] = strconv.Itoa(url.Id)
+	resp["user_id"] = strconv.Itoa(url.UserId)
+	resp["original_link"] = url.OriginalLink
+	resp["short_link"] = url.ShortLink
+	resp["view"] = strconv.Itoa(url.Views)
+	jsonResp, err := json.Marshal(resp)
+	if err != nil {
+		return nil, err
+	}
+	return jsonResp, err
+}
+
+func GetUserUrls(conn *pgx.Conn, userId int) ([]URL, error) {
 	rows, err := conn.Query(context.Background(), "SELECT id, userId, originalLink, shortLink, views FROM shortly.urls WHERE userid = $1", userId)
 	if err != nil {
 		return []URL{}, err
@@ -51,6 +71,16 @@ func GetURL(conn *pgx.Conn, shortLink string) (*URL, error) {
 	return &out, nil
 }
 
+func IncrementURLViews(conn *pgx.Conn, urlId int) error {
+	row, err := conn.Query(context.Background(), "UPDATE shortly.urls SET views = views + 1 WHERE id = $1", urlId)
+	if err != nil {
+		return err
+	}
+	row.Close()
+
+	return nil
+}
+
 func AddURL(conn *pgx.Conn, user *User, originalLink string) (*URL, error) {
 	// generate short link
 	b := make([]byte, 4)
@@ -74,9 +104,9 @@ func AddURL(conn *pgx.Conn, user *User, originalLink string) (*URL, error) {
 	return &out, nil
 }
 
-func DeleteURL(conn *pgx.Conn, user *User, urlId int) error {
+func DeleteURL(conn *pgx.Conn, user *User, shortLink string) error {
 	// delete url from db
-	rows, err := conn.Query(context.Background(), "DELETE FROM shortly.urls WHERE id = $1 AND userId = $2", urlId, user.Id)
+	rows, err := conn.Query(context.Background(), "DELETE FROM shortly.urls WHERE shortLink = $1 AND userId = $2", shortLink, user.Id)
 	if err != nil {
 		return err
 	}
@@ -84,7 +114,7 @@ func DeleteURL(conn *pgx.Conn, user *User, urlId int) error {
 
 	// delete url from user object
 	for i, other := range user.Urls {
-		if other.Id == urlId {
+		if other.ShortLink == shortLink {
 			user.Urls = append(user.Urls[:i], user.Urls[i+1:]...)
 			break
 		}
