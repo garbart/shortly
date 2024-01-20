@@ -19,7 +19,14 @@ func buildToken() Token {
 	return Token{Value: uuid.New().String(), ExpiredAt: time.Now().AddDate(0, 0, 21)}
 }
 
-func RenewToken(conn *pgx.Conn, token string, userId int) (*Token, error) {
+func RenewToken(conn *pgx.Conn, token string) (*Token, error) {
+	// get userId
+	var userId int
+	err0 := conn.QueryRow(context.Background(), "SELECT id FROM shortly.tokens WHERE value = $1", token).Scan(&userId)
+	if err0 != nil {
+		return nil, err0
+	}
+
 	// delete old token
 	rows, err1 := conn.Query(context.Background(), "DELETE FROM shortly.tokens WHERE value = $1", token)
 	if err1 != nil {
