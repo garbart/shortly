@@ -42,10 +42,18 @@ func RenewTokenHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// renew token
-	_, err3 := models.RenewToken(conn, request.Token)
+	token, err3 := models.RenewToken(conn, request.Token)
 	if err3 != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
+	resp, err := token.ToJSON()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.Write(resp)
 }

@@ -19,10 +19,12 @@ func main() {
 
 	// Setup HTTP handlers
 	router := mux.NewRouter()
-	//router.Handle("/api/signup", http.HandlerFunc(api.SignUpHandler))
-	//router.Handle("/api/signin", http.HandlerFunc(api.SignInHandler))
-	//router.Handle("/api/renew_token", http.HandlerFunc(api.RenewTokenHandler))
-	//router.Handle("/api/url", http.HandlerFunc(api.URLHandler))
+	router.Handle("/api/signup", http.HandlerFunc(api.SignUpHandler))
+	router.Handle("/api/signin", http.HandlerFunc(api.SignInHandler))
+	router.Handle("/api/renew_token", http.HandlerFunc(api.RenewTokenHandler))
+	router.Handle("/api/create_url", http.HandlerFunc(api.CreateURLHandler))
+	router.Handle("/api/delete_url", http.HandlerFunc(api.DeleteURLHandler))
+	router.Handle("/api/get_urls", http.HandlerFunc(api.GetAllURLsHandler))
 	router.Handle("/{short_link}", http.HandlerFunc(api.GetURLHandler))
 	serverErr := http.ListenAndServe(":80", router)
 	if serverErr != nil {

@@ -35,7 +35,7 @@ func SignInByPassword(conn *pgx.Conn, email, passwordHash string) (*User, *Token
 	}
 
 	// select urls
-	urls, err2 := getUserUrls(conn, user.Id)
+	urls, err2 := GetUserUrls(conn, user.Id)
 	if err2 != nil {
 		return nil, nil, err2
 	}
@@ -43,6 +43,7 @@ func SignInByPassword(conn *pgx.Conn, email, passwordHash string) (*User, *Token
 
 	// insert token
 	token := buildToken()
+	token.UserId = user.Id
 	err3 := conn.QueryRow(context.Background(), "INSERT INTO shortly.tokens (userid, value, expiredat) VALUES ($1, $2, $3) RETURNING id", user.Id, token.Value, token.ExpiredAt).Scan(&token.Id)
 	if err3 != nil {
 		return nil, nil, err3
@@ -54,20 +55,20 @@ func SignInByPassword(conn *pgx.Conn, email, passwordHash string) (*User, *Token
 func SignInByToken(conn *pgx.Conn, tokenValue string) (*User, error) {
 	// select token
 	token := Token{}
-	err := conn.QueryRow(context.Background(), "SELECT id, userid, value, expiredat FROM shortly.tokens WHERE value = $1 AND expiredat > $2", tokenValue, time.Now()).Scan(&token.Id, &token.UserId, &token.Value, &token.ExpiredAt)
+	err := conn.QueryRow(context.Background(), "SELECT id, userid, value, expiredat FROM shortly.tokens WHERE value = $1 AND expiredat > $2", tokenValue, time.Now().AddDate(0, 0, -21)).Scan(&token.Id, &token.UserId, &token.Value, &token.ExpiredAt)
 	if err != nil {
 		return nil, err
 	}
 
 	// select user
 	user := User{}
-	err1 := conn.QueryRow(context.Background(), "SELECT id, email, passwordHash FROM shortly.users WHERE id = $1", token.Id).Scan(&user.Id, &user.Email, &user.PasswordHash)
+	err1 := conn.QueryRow(context.Background(), "SELECT id, email, passwordHash FROM shortly.users WHERE id = $1", token.UserId).Scan(&user.Id, &user.Email, &user.PasswordHash)
 	if err1 != nil {
 		return nil, err1
 	}
 
 	// select urls
-	urls, err2 := getUserUrls(conn, user.Id)
+	urls, err2 := GetUserUrls(conn, user.Id)
 	if err2 != nil {
 		return nil, err2
 	}
